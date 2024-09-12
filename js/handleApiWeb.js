@@ -85,19 +85,43 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
         // Webservice Call
 	    //============================================================================ 	
 		console.log('webservice ' + logApplication + ' start');
+		var res;
+	  	var config;
+
 		
-			const config = {
+  	 
+  	//console.log('config: '+ qs.stringify(config));
+		var res;
+    // aanroep webservice
+	  // ALs applicatienaam BLOB bevat, wordt er een blob als antwoord verwacht
+	if (logApplication.includes('BLOB'))
+	{	
+		config = {
+			method: '' + requestMethod ,
+			url:  '' +  url , 			
+            headers: headers, 
+			data: requestData,
+			responseType: 'arraybuffer'
+ 
+		}
+ 	res = await axios.request(config);
+    // response omzetten van blob(arraybuffer) naar base64string
+	// , zodat het antwoord via repsonse_data(CLOB) in apilog kan worden teruggegeven
+	res.data = await Buffer.from(res.data, 'binary').toString('base64');	
+	}
+		  // Anders wordt er de default(JSON) als antwoord verwacht
+	else
+	{
+		config = {
 			method: '' + requestMethod ,
 			url:  '' +  url , 			
             headers: headers, 
 			data: requestData
  
 		}
-  	 
-  	//console.log('config: '+ qs.stringify(config));
-  
-    // aanroep webservice
-	const res =  await axios.request(config);
+
+	res =  await axios.request(config);	
+	}
  
 	//console.log(res.status);
 	//console.log(res.statusText);
