@@ -1,4 +1,5 @@
 const { getApiLog } = require("./apilogDB.js");
+const { getApiLob } = require("./apilobDB.js");
 const { createAndSendRequest } = require("./handleApiWeb.js");
  
 
@@ -32,6 +33,16 @@ async function startConsumeWebserviceApiWeb (setletter, guid, applicatie) {
    let jsonApilog = await respApiLog;
    //console.log('createAndSendRequest ' + JSON.stringify(jsonApilog));
    
+     // alleen voor sales_binning. Impact laag
+   if (applicatie.trim() == 'API_GRIP_POST_SALES_BINNING_VR')
+		{
+   const respApiLob = await getApiLob(setletter, guid);
+   let jsonApilob = await respApiLob;
+   if (jsonApilob[0].REQUEST_DATA_LOB.trim() !== ''){
+   jsonApilog[0].REQUEST_DATA = jsonApilob[0].REQUEST_DATA_LOB.trim();
+   console.log('Length request: ' + Buffer.byteLength(jsonApilog[0].REQUEST_DATA));
+   }	
+   }
     
    let resolve = await createAndSendRequestWebservice(setletter, guid, jsonApilog);;
     

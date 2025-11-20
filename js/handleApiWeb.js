@@ -117,8 +117,22 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
 			url:  '' +  url , 			
             headers: headers, 
 			data: requestData
- 
+			}
+
+	  // alleen voor sales_binning. Impact laag
+   if (logApplication.trim() == 'API_GRIP_POST_SALES_BINNING_VR')
+		{
+		config = {
+			method: '' + requestMethod ,
+			url:  '' +  url , 			
+            headers: headers, 
+			data: requestData,
+			maxContentLength: Buffer.byteLength(requestData),
+            maxBodyLength: Buffer.byteLength(requestData)
+ 	
 		}
+	    }
+
 
 	res =  await axios.request(config);	
 	}
