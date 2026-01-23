@@ -181,6 +181,8 @@ function updateApiLogJSON (setletter, guid, response) {
 	 resolve(result);
 	 connection.close().then(() => {
         console.log('closed');
+
+         updateApiLogJSONUTF (setletter, guid, response);
     });
 }); 
        
@@ -189,6 +191,48 @@ function updateApiLogJSON (setletter, guid, response) {
 	}	
  });   
   }
+
+
+  function updateApiLogJSONUTF (setletter, guid, response) {
+	 
+  return new Promise(function(resolve)
+  {          
+	
+	
+	
+	if (setletter !== undefined) {
+ 
+     const sSql = 'UPDATE DASFP' + setletter + '.apilog set RESPONSE_DATA_UTF =  ? where LOG_GUID =\'' + guid + '\' with NONE';
+  
+	// Binding elements 
+	//console.log(JSON.stringify(response.headers));
+	const arrayElements = [JSON.stringify(response.data).trim()]; // response.statusText
+   
+	const conn = odbc.connect('DSN=*LOCAL;NAM=1;CMT=0;CCSID=1208',  (error, connection) => { 
+	//console.log('sSQL '+sSql); 
+    
+     connection.query( sSql, arrayElements, (error, result) => {
+	 if (error) {
+       throw error;
+     }	
+	 
+	 //console.log(`Result Set: ${JSON.stringify(result)}`);
+	  
+     // let resultaat = result;
+	 // console.log('Resultaat:' +JSON.stringify(resultaat));
+	 resolve(result);
+	 connection.close().then(() => {
+        console.log('closed');
+    });
+}); 
+       
+}); 
+       
+	}	
+ });   
+  }
+
+
 
 function updateApiLogJSON2 (setletter, guid, response) {
 	 
