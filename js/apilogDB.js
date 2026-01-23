@@ -160,7 +160,7 @@ function updateApiLogJSON (setletter, guid, response) {
 	
 	if (setletter !== undefined) {
  
-     const sSql = 'UPDATE DASFP' + setletter + '.apilog set RESPONSE_HTTP_CODE = ?, RESPONSE_HTTP_MESSAGE = ? , RESPONSE_HTTP_HEADER = ?, RESPONSE_DATA= ? where LOG_GUID =\'' + guid + '\' with NONE';
+     const sSql = 'UPDATE DASFP' + setletter + '.apilog set RESPONSE_HTTP_CODE = ?, RESPONSE_HTTP_MESSAGE = ? , RESPONSE_HTTP_HEADER = ?, RESPONSE_DATA_UTF= ? where LOG_GUID =\'' + guid + '\' with NONE';
   
 	// Binding elements 
 	//console.log(JSON.stringify(response.headers));
