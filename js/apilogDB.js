@@ -106,6 +106,8 @@ function updateApiLog (setletter, guid, response) {
 	 resolve(result);
 	  connection.close().then(() => {
         console.log('closed');
+
+        updateApiLogJSONUTF (setletter, guid, response);
     });
 }); 
      
