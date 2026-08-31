@@ -1,6 +1,6 @@
 const querystring = require("querystring");
 const odbc = require("odbc");
- 
+  
  
 function getApiLob (setletter, guid) {
 	 
