@@ -106,8 +106,6 @@ function updateApiLog (setletter, guid, response) {
 	 resolve(result);
 	  connection.close().then(() => {
         console.log('closed');
-
-       // updateApiLogJSONUTF (setletter, guid, response);
     });
 }); 
      
@@ -339,6 +337,41 @@ function updateApiLogErrorJSON (setletter, guid, error) {
  });
  }); 
  }  
+
+
+
+function updateApiLogConfigJSON (setletter, guid, configHeader, configBody) {
+	 
+  return new Promise(function(resolve)
+  {    
+if (setletter !== undefined) {  
+	const sSql = 'UPDATE DASFP' + setletter + '.apilog set Request_DATA = \'' + configHeader + '\'  ,  RESPONSE_data = \'' + configBody + '\'  Where LOG_GUID =\'' + guid + '\' with NONE';
+	//console.log("update Config header en body  sql:  " + sSql)
+	
+   const conn = odbc.connect('DSN=*LOCAL;NAM=1;CMT=0;',  (error, connection) => { 
+	//console.log('docddpsql sSQL '+sSql); 
+    
+     connection.query( sSql, (error, result) => {
+	 if (error) {
+       throw error;
+     }	
+	 
+	 //console.log(`Result Set: ${JSON.stringify(result)}`);
+	  
+     // let resultaat = result;
+	 // console.log('Resultaat:' +JSON.stringify(resultaat));
+	 resolve(result);
+	  connection.close().then(() => {
+        console.log('closed');
+    });
+}); 
+     
+}); 
+      
+	}	
+ });   
+ }  
+  
   
 function uitlezen (jsonfile) {
 //console.log('jsonFile '+ jsonfile);	
@@ -366,7 +399,8 @@ function testen (jsonfile) {
   updateApiLog: updateApiLog,
   updateApiLogJSON: updateApiLogJSON,
   updateApiLogError: updateApiLogError,
-  updateApiLogErrorJSON: updateApiLogErrorJSON
+  updateApiLogErrorJSON: updateApiLogErrorJSON,
+  updateApiLogConfigJSON: updateApiLogConfigJSON
  };
 
 function updateApiLogSave (setletter, guid, response) {

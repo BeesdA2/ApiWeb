@@ -4,8 +4,10 @@ const FormData = require('form-data');
 const { updateApiLogJSON } = require("./apilogDB.js");
 const  { updateApiLogError } = require("./apilogDB.js");
 const  { updateApiLogErrorJSON } = require("./apilogDB.js");
+const  { updateApiLogConfigJSON } = require("./apilogDB.js");
 const axios = require('axios');
 const qs = require('qs');
+const fs = require('fs');
 //const fs = require('fs');
  
 async function createAndSendRequest (setletter,  guid, jsonApilog) {
@@ -46,7 +48,8 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
       if (requestLog_create_program === 'TOPDESKATT')
 	  {
 		  console.log('TOPDESKATT');
-		  const respDocddpsql = await getDocddpSql(setletter, requestData);
+		  
+		  const respDocddpsql = await getDocddpSql(setletter, requestData, 'TOP', 'T');
           let jsonDocddpsql = await respDocddpsql;
 		  const buffer = Buffer.from(jsonDocddpsql[0].FILE_BLOB,'binary');
 		  let filenaam = requestParameters.trim();
@@ -80,7 +83,11 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
        }
 	   
           headers = JSON.parse(requestHeader.trim());
-	  } 		  
+	  } 
+
+
+      
+	  
 		//============================================================================
         // Webservice Call
 	    //============================================================================ 	
@@ -104,7 +111,17 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
 			responseType: 'arraybuffer'
  
 		}
+	const startWithBLOB = new Date();
+    var datetime = startWithBLOB.toLocaleString();
+
+ console.log(datetime + ' net voor Axios request ' + logApplication ); 
+  	
  	res = await axios.request(config);
+	
+	const endWithBLOB = new Date();
+     datetime = endWithBLOB.toLocaleString();
+	console.log(datetime + ' net na Axios request ' + logApplication ); 
+	
     // response omzetten van blob(arraybuffer) naar base64string
 	// , zodat het antwoord via repsonse_data(CLOB) in apilog kan worden teruggegeven
 	res.data = await Buffer.from(res.data, 'binary').toString('base64');	
@@ -122,19 +139,133 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
 	  // alleen voor sales_binning. Impact laag
    if (logApplication.trim() == 'API_GRIP_POST_SALES_BINNING_VR')
 		{
+		console.log('API_GRIP_POST_SALES_BINNING_VR Post Method');	
 		config = {
 			method: '' + requestMethod ,
 			url:  '' +  url , 			
             headers: headers, 
 			data: requestData,
-			maxContentLength: Buffer.byteLength(requestData),
-            maxBodyLength: Buffer.byteLength(requestData)
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+
+			//maxContentLength: Buffer.byteLength(requestData) * 1.5,
+            //maxBodyLength: Buffer.byteLength(requestData) * 1.5
  	
 		}
-	    }
+		
+		}
+	
+	   
+      
+
+         // ALs applicatienaam SNDPDF bevat, wordt er PDF verstuurd via Axios
+	if (logApplication.includes('SNDPDF'))
+	  {
+		  console.log('AMIQUOTSND');
+		  let data = JSON.parse(requestData);
+
+          
+		  
+		  let filename = data.filename;
+		  let base64String = data.base64String;
+		  
+		  let amiDocumentType = '';
+		  if (requestLog_create_program === 'AMIQUOTSND')
+		  {  
+		  amiDocumentType = data.amiDocumentType; 
+		  } 
+		  
+		   
+		  
+
+           
+           
+         const buffer = Buffer.from(base64String, 'base64');
+         
+		  
+		  
+//fs.writeFileSync('/beesda2/NodeJS/Productie/ApiWeb/js/test-ami.pdf', buffer);
+
+          
+		  
+          
+		  
+		 //const buffer =jsonDocddpsql[0].FILE_BLOB;
+		  
+		  
+		  
+		  
+		  let form = new FormData();
+
+          form.append("file", buffer  , {filename: filename, contentType: 'application/pdf'});
+		  
+		  if (requestLog_create_program === 'AMIQUOTSND')
+		  {
+		  form.append("documentType" , amiDocumentType);
+          }
+		  
+		  let requestHeaderJson = JSON.parse(requestHeader);
+		  
+		  let authorizationBearer = requestHeaderJson.Authorization;
 
 
+          console.log('requestHeader:', requestHeader);
+ 
+
+          const formHeaders = form.getHeaders();
+ const request_header = {
+      'Authorization' : authorizationBearer.trim(), 
+	  'accept': 'application/json', 
+      ...formHeaders
+    
+       
+};
+        headers = request_header;
+      	url = requestURL.trim();	
+	   	requestData = form;  
+
+	  	
+   
+		console.log('AMIQUOTSND Post Method');	
+		config = {
+			method: '' + requestMethod ,
+			url:  '' +  url , 			
+            headers: headers, 
+			data: requestData,
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+
+			//maxContentLength: Buffer.byteLength(requestData) * 1.5,
+            //maxBodyLength: Buffer.byteLength(requestData) * 1.5
+ 	
+		}
+		 
+		
+		//let configHeaders = JSON.stringify(config.headers); 
+		//let configBody = JSON.stringify(config.data); 
+		
+		//let consolebericht = await updateApiLogConfigJSON(setletter, guid,  configHeaders, configHeaders);
+		//console.log('AMIQUOTSND console:', JSON.stringify(config, null, 2));
+		}
+		
+    
+
+	const start = new Date();
+    datetime = start.toLocaleString();
+    console.log(datetime + ' net voor Axios request ' + logApplication ); 
+	
+	
+
+	
 	res =  await axios.request(config);	
+	
+	//console.log('AXIOS STATUS SUCCESVOL:', res.status);
+    //console.log('AXION DATA SUCCESVOL:', res.data);
+	
+	const einde = new Date();
+    datetime = einde.toLocaleString();
+    console.log(datetime + ' net na Axios request ' + logApplication ); 
+	
 	}
  
 	//console.log(res.status);
@@ -157,8 +288,27 @@ let requestLog_create_program = jsonApilog[0].LOG_CREATE_PROGRAM.trim();
 		}
 		
     } catch (error) {
-		console.log('error msg ' + error);
-		let foutbericht = await updateApiLogErrorJSON(setletter, guid, error);
+		const errordate = new Date();
+	console.log('AXIOS ERROR:', error.message);
+    console.log('AXIOS CODE:', error.code);	
+		
+    datetime = errordate.toLocaleString();
+    	console.log(datetime + ' error msg ' + error);
+		console.log('Status:', error.response?.status);
+    console.log('Response:', JSON.stringify(error.response?.data, null, 2));
+    console.log('URL:', error.config?.url);
+    console.log('Method:', error.config?.method);
+		//let foutbericht = await updateApiLogErrorJSON(setletter, guid, error);
+	
+	if (error.response) {
+        console.log('STATUS:', error.response.status);
+        console.log('DATA:', error.response.data);
+    }
+
+    if (error.request) {
+        console.log('Er is een request verstuurd maar geen response ontvangen');
+    }	
+		
 		return('mislukt');
 		}
 };

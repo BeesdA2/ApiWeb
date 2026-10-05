@@ -1,7 +1,7 @@
 const querystring = require("querystring");
 const odbc = require("odbc");
 
-function getDocddpSql (setletter, filenameAttachment) {
+function getDocddpSql (setletter, filenameAttachment, docType, oorsprong) {
 	 
   return new Promise(function(resolve)
   {
@@ -9,14 +9,14 @@ function getDocddpSql (setletter, filenameAttachment) {
  
  if (setletter !== undefined) {
       
-	 const sSql = 'Select * FROM DASFP' + setletter + '.docddpsql  where FILE_NAAM =\'' + filenameAttachment + '\'  and  DOCUMENT_TYPE = \'TOP\' AND OORSPRONG_CODE=\'T\' with NONE';
+	 const sSql = 'Select * FROM DASFP' + setletter + '.docddpsql  where FILE_NAAM =\'' + filenameAttachment + '\'  and  DOCUMENT_TYPE = \'' + docType + '\' AND OORSPRONG_CODE=\'' + oorsprong + '\' with NONE';
   
 	// Binding elements 
 	//console.log(JSON.stringify(response.headers));
 	//const arrayElements = [base64String, base64String]; 
    
 	const conn = odbc.connect('DSN=*LOCAL;NAM=1;CMT=0;',  (error, connection) => { 
-	console.log('sSQL '+sSql); 
+	console.log('docddpsql sSQL '+sSql); 
     
      connection.query( sSql, (error, result) => {
 	 if (error) {
